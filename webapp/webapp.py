@@ -1,3 +1,5 @@
+import numpy
+from PIL import Image
 from flask import Flask, render_template, request
 app = Flask(__name__)
 
@@ -10,7 +12,9 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     x = request.files['input1']
-    return 'HELLO'
+    b = Image.open(x)
+    b = numpy.array(b)
+    return str(b)
 
 
 if __name__ == '__main__':
