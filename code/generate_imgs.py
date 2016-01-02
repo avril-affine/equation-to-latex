@@ -118,7 +118,7 @@ def add_noise(img):
     output: (numpy array) - New image with noise added.
     '''
     noise = np.zeros(img.shape, dtype=np.uint8)
-    cv2.randn(noise, 0, 175)
+    cv2.randn(noise, 0, 150)
     new_img = img + noise
     return new_img
 
