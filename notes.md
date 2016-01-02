@@ -30,6 +30,7 @@ code/generate_images.py
 - get_img: crops an image from the file
 - img_to_array: converts all images in folder to a 28x28 matrix and saves them
 - compile_images: compiles a folder of jsons to one json
+- add_noise: creates new images with noise in them
 
 code/model.py
 

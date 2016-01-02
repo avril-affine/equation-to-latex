@@ -109,6 +109,12 @@ def compile_images():
 
 
 def add_noise(path, n):
+    '''
+    Creates multiple new images with noise.
+
+    input: path - The filename with its path for the image to add noise to.
+           n - Number of new images to create.
+    '''
     img = cv2.imread(path)
     filename = path.split('.png')[0]
     noise = np.zeros(img.shape, dtype=np.uint8)
