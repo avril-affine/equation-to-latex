@@ -2,6 +2,7 @@
 
 - write down which symbols to take out so can add them in later stages
 - size of input image for the net is hard coded in code/generate_imgs.py img_to_array()
+- removed \div and - from operators: opencv not recognizing any contour
 
 # Problems
 
@@ -20,7 +21,6 @@
 
 # Quick Problems
 
-- compile_images.py: reindex the dataframe before converting to json
 
 # Files
 
@@ -30,7 +30,7 @@ code/generate_images.py
 - get_img: crops an image from the file
 - img_to_array: converts all images in folder to a 28x28 matrix and saves them
 - compile_images: compiles a folder of jsons to one json
-- add_noise: creates new images with noise in them
+- add_noise: add noise to an image
 
 code/model.py
 

@@ -7,7 +7,7 @@ from IPython.lib.latextools import latex_to_png
 import matplotlib.pyplot as plt
 
 
-def generate_images(path, values, fontsize=35):
+def generate_images(path, values, fontsize=50, figsize=(5,5)):
     '''
     Converts a list of values to latex images and saves them to specified
     path.
@@ -17,7 +17,7 @@ def generate_images(path, values, fontsize=35):
            fontsize - (int) Font size for the symbol
     '''
     for val in values:
-        fig, ax = plt.subplots(figsize=(1, 1))
+        fig, ax = plt.subplots(figsize=figsize)
         ax.text(0.5, 0.5, '$%s$' % val, fontsize=fontsize,
                 ha='center', va='center')
         ax.axis('off')
@@ -60,18 +60,19 @@ def test_get_img(filename):
 def img_to_array(path):
     '''
     Converts all images in path to a 28x28 matrix representation of the
-    image.
+    image and creates new images with noise in them.
 
     input: path - (string) Folder containing images to be converted
     '''
     img_dict = {'label': [], 'img': []}
     for f in os.listdir(path):
-        print f
         img = get_img(path + '/' + f)
         img = cv2.resize(img, (28, 28), interpolation=cv2.INTER_AREA)
         label = f.split('_')[0]
-        img_dict['label'].append(label)
-        img_dict['img'].append(img)
+        for _ in xrange(100):
+            img_dict['label'].append(label)
+            noise_img = add_noise(img)
+            img_dict['img'].append(noise_img)
 
     filename = path.split('/')[-1]
     df = pd.DataFrame(img_dict)
@@ -92,40 +93,53 @@ def compile_images():
         for label in labels:
             if label in label_dir:
                 print 'Error: repeat label in two files'
+                print label
+                print f
                 return
             else:
                 label_dir[label] = count
                 count += 1
 
         df['label'] = df['label'].map(label_dir)
-        res = pd.concat((res, df))
+        res = pd.concat((res, df), ignore_index=True)
 
-    res.reindex()
-    print res
     res.to_json('data/images/compiled.json')
-    label_str = ','.join(label_dir.keys())
+    label_str = map(lambda x: str(x), label_dir.keys())
+    label_str = '\n'.join(label_str)
     with open('data/images/labels.txt', 'w') as f:
         f.write(label_str)
 
 
-def add_noise(path, n):
+def add_noise(img):
     '''
-    Creates multiple new images with noise.
+    Adds noise to inputted image.
 
-    input: path - The filename with its path for the image to add noise to.
-           n - Number of new images to create.
+    input: img - A numpy array representing an image.
+    output: (numpy array) - New image with noise added.
     '''
-    img = cv2.imread(path)
-    filename = path.split('.png')[0]
     noise = np.zeros(img.shape, dtype=np.uint8)
-    for i in xrange(n):
-        cv2.randn(noise, 0, 175)
-        new_img = img + noise
-        with open(filename + '_' + str(i) + '.png', 'w') as f:
-            f.write(new_img)
+    cv2.randn(noise, 0, 175)
+    new_img = img + noise
+    return new_img
+
+
+def rm_images():
+    paths = ['imgs/numbers/',
+             'imgs/letters/lower/',
+             'imgs/letters/upper/',
+             'imgs/letters/greek_lower/',
+             'imgs/letters/greek_upper/',
+             'imgs/operators/',
+             'data/images/']
+    for path in paths:
+        for f in os.listdir(path):
+            os.remove(path + f)
 
 
 def main():
+    print 'Removing images...'
+    rm_images()
+    print 'Generating symbol images...'
     # numbers
     generate_images('imgs/numbers/', range(0, 10))
     # ascii lower
@@ -142,6 +156,7 @@ def main():
     operators = pd.read_csv('data/operators.csv')['operators']
     generate_images('imgs/operators/', operators)
 
+    print 'Converting images to matrices...'
     img_to_array('imgs/numbers')
     img_to_array('imgs/letters/lower')
     img_to_array('imgs/letters/upper')
@@ -149,6 +164,7 @@ def main():
     img_to_array('imgs/letters/greek_upper')
     img_to_array('imgs/operators')
 
+    print 'Compiling images to one dataset...'
     compile_images()
 
 
