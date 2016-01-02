@@ -17,9 +17,9 @@ if __name__ == '__main__':
         layers=[('input', layers.InputLayer),
                 ('conv1', layers.Conv2DLayer),
                 ('pool1', layers.Pool2DLayer),
-                ('hidden1', layers.DenseLayer),
                 ('conv2', layers.Conv2DLayer),
                 ('pool2', layers.Pool2DLayer),
+                ('hidden1', layers.DenseLayer),
                 ('hidden2', layers.DenseLayer),
                 ('output', layers.DenseLayer)],
 

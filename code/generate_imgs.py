@@ -108,6 +108,17 @@ def compile_images():
         f.write(label_str)
 
 
+def add_noise(path, n):
+    img = cv2.imread(path)
+    filename = path.split('.png')[0]
+    noise = np.zeros(img.shape, dtype=np.uint8)
+    for i in xrange(n):
+        cv2.randn(noise, 0, 175)
+        new_img = img + noise
+        with open(filename + '_' + str(i) + '.png', 'w') as f:
+            f.write(new_img)
+
+
 def main():
     # numbers
     generate_images('imgs/numbers/', range(0, 10))
