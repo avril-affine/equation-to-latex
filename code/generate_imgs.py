@@ -1,3 +1,4 @@
+import sys
 import os
 import cv2
 import numpy as np
@@ -57,22 +58,28 @@ def test_get_img(filename):
     plt.show()
 
 
-def img_to_array(path):
+def img_to_array(path, n_noise=100):
     '''
     Converts all images in path to a 28x28 matrix representation of the
     image and creates new images with noise in them.
 
     input: path - (string) Folder containing images to be converted
+           n_noise - (int) Number of noise images to add. If 0, then just the
+                     original image without noise will be saved.
     '''
     img_dict = {'label': [], 'img': []}
     for f in os.listdir(path):
         img = get_img(path + '/' + f)
         img = cv2.resize(img, (28, 28), interpolation=cv2.INTER_AREA)
         label = f.split('_')[0]
-        for _ in xrange(100):
+        if n_noise > 0:
+            for _ in xrange(n_noise):
+                img_dict['label'].append(label)
+                noise_img = add_noise(img)
+                img_dict['img'].append(noise_img)
+        else:
             img_dict['label'].append(label)
-            noise_img = add_noise(img)
-            img_dict['img'].append(noise_img)
+            img_dict['img'].append(img)
 
     filename = path.split('/')[-1]
     df = pd.DataFrame(img_dict)
@@ -100,7 +107,7 @@ def compile_images():
                 label_dir[label] = count
                 count += 1
 
-        df['label'] = df['label'].map(label_dir)
+        df['label_encode'] = df['label'].map(label_dir)
         res = pd.concat((res, df), ignore_index=True)
 
     res.to_json('data/images/compiled.json')
@@ -108,6 +115,10 @@ def compile_images():
     label_str = '\n'.join(label_str)
     with open('data/images/labels.txt', 'w') as f:
         f.write(label_str)
+
+    label_df = pd.DataFrame({'labels': label_dir.keys(),
+                             'encode': label_dir.values()})
+    label_df.to_csv('data/images/labels.csv', index=False)
 
 
 def add_noise(img):
@@ -124,6 +135,9 @@ def add_noise(img):
 
 
 def rm_images():
+    '''
+    Removes all images before running the program.
+    '''
     paths = ['imgs/numbers/',
              'imgs/letters/lower/',
              'imgs/letters/upper/',
@@ -156,13 +170,18 @@ def main():
     operators = pd.read_csv('data/operators.csv')['operators']
     generate_images('imgs/operators/', operators)
 
+    if len(sys.argv) > 1:
+        n_noise = int(sys.argv[1])
+    else:
+        n_noise = 0
+
     print 'Converting images to matrices...'
-    img_to_array('imgs/numbers')
-    img_to_array('imgs/letters/lower')
-    img_to_array('imgs/letters/upper')
-    img_to_array('imgs/letters/greek_lower')
-    img_to_array('imgs/letters/greek_upper')
-    img_to_array('imgs/operators')
+    img_to_array('imgs/numbers', n_noise)
+    img_to_array('imgs/letters/lower', n_noise)
+    img_to_array('imgs/letters/upper', n_noise)
+    img_to_array('imgs/letters/greek_lower', n_noise)
+    img_to_array('imgs/letters/greek_upper', n_noise)
+    img_to_array('imgs/operators', n_noise)
 
     print 'Compiling images to one dataset...'
     compile_images()
