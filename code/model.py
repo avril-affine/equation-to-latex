@@ -3,13 +3,48 @@ from lasagne.nonlinearities import rectify, softmax
 from lasagne.updates import nesterov_momentum
 from nolearn.lasagne import NeuralNet
 from nolearn.lasagne import PrintLayerInfo
-from sklearn.metrics import classification_report
+from nolearn.lasagne import TrainSplit
+# from sklearn.metrics import classification_report
+import cPickle as pickle
 import pandas as pd
 import numpy as np
 
 
+class MyTrainSplit(TrainSplit):
+    def __call__(self, X, y, net):
+        train_index = []
+        test_index = []
+        for val in np.unique(y):
+            indexes = np.where(y == val)[0]
+            length = len(indexes)
+            train_index.extend(indexes[int(length * self.eval_size):])
+            test_index.extend(indexes[:int(length * self.eval_size)])
+        return X[train_index], X[test_index], y[train_index], y[test_index]
+
+
+class SaveBestModel(object):
+    def __init__(self, name):
+        self.best = 0.
+        self.name = name
+        # self.file_num = None
+
+
+    def __call__(self, nn, train_history):
+#        if self.file_num is None:
+        # digits = len(str(nn.max_epochs))
+        # file_num = '0:0{}d'.format(digits)
+        # self.file_num = '{' + file_num + '}'
+        score = train_history[-1]['valid_accuracy']
+        if score > self.best:
+            self.best = score
+            # file_string = self.file_num.format(train_history[-1]['epoch'])
+            # file_name = self.name + '_' + file_string + '.pkl'
+            with open(self.name, 'wb') as f:
+                pickle.dump(nn, f)
+
+
 if __name__ == '__main__':
-    df = pd.read_json('data/images/compiled.json')
+    df = pd.read_json('compiled.json')
     X = df['img']
     X = list(X.map(lambda x: list(np.array(x, np.float32) / 255)).values)
     X = np.array(X, dtype=np.float32)
@@ -19,103 +54,17 @@ if __name__ == '__main__':
     # y = y.reshape(y.shape[0], 1)
     num_labels = len(df['label'].unique())
 
-    filter_size1 = 32
-    filter_size2 = 64
-    # mdl = NeuralNet(
-    #     layers=[('input', layers.InputLayer),
-    #             ('conv1', layers.Conv2DLayer),
-    #             ('conv2', layers.Conv2DLayer),
-    #             ('conv3', layers.Conv2DLayer),
-    #             ('conv4', layers.Conv2DLayer),
-    #             ('pool1', layers.Pool2DLayer),
-    #             ('conv5', layers.Conv2DLayer),
-    #             ('conv6', layers.Conv2DLayer),
-    #             ('conv7', layers.Conv2DLayer),
-    #             ('pool2', layers.Pool2DLayer),
-    #             ('hidden1', layers.DenseLayer),
-    #             ('hidden2', layers.DenseLayer),
-    #             ('output', layers.DenseLayer)],
-    #
-    #     # input
-    #     input_shape=(None, 28, 28),
-    #
-    #     # conv1
-    #     conv1_num_filters=filter_size1,
-    #     conv1_filter_size=(3, 3),
-    #     conv1_nonlinearity=rectify,
-    #     conv1_pad=1,
-    #
-    #     # conv2
-    #     conv2_num_filters=filter_size1,
-    #     conv2_filter_size=(3, 3),
-    #     conv2_nonlinearity=rectify,
-    #     conv2_pad=1,
-    #
-    #     # conv3
-    #     conv3_num_filters=filter_size1,
-    #     conv3_filter_size=(3, 3),
-    #     conv3_nonlinearity=rectify,
-    #     conv3_pad=1,
-    #
-    #     # conv4
-    #     conv4_num_filters=filter_size1,
-    #     conv4_filter_size=(3, 3),
-    #     conv4_nonlinearity=rectify,
-    #     conv4_pad=1,
-    #
-    #     # pool1
-    #     pool1_pool_size=(2, 2),
-    #     pool1_mode='max',   # try average_inc_pad later
-    #
-    #     # conv5
-    #     conv5_num_filters=filter_size2,
-    #     conv5_filter_size=(3, 3),
-    #     conv5_nonlinearity=rectify,
-    #     conv5_pad=1,
-    #
-    #     # conv6
-    #     conv6_num_filters=filter_size2,
-    #     conv6_filter_size=(3, 3),
-    #     conv6_nonlinearity=rectify,
-    #     conv6_pad=1,
-    #
-    #     # conv7
-    #     conv7_num_filters=filter_size2,
-    #     conv7_filter_size=(3, 3),
-    #     conv7_nonlinearity=rectify,
-    #     conv7_pad=1,
-    #
-    #     # pool2
-    #     pool2_pool_size=(2, 2),
-    #     pool2_mode='max',   # try average_inc_pad later
-    #
-    #     # hidden1
-    #     hidden1_num_units=300,
-    #     hidden1_nonlinearity=rectify,
-    #
-    #     # hidden2
-    #     hidden2_num_units=150,
-    #     hidden2_nonlinearity=rectify,
-    #
-    #     # output
-    #     output_num_units=num_labels,
-    #     output_nonlinearity=softmax,
-    #
-    #     # Optimization
-    #     update=nesterov_momentum,
-    #     update_learning_rate=0.01,
-    #     update_momentum=0.7,
-    #     max_epochs=100,
-    #
-    #     regression=False,
-    #     verbose=2
-    # )
+    filter_size1 = 50
+    filter_size2 = 100
 
     mdl = NeuralNet(
         layers=[('input', layers.InputLayer),
                 ('conv1', layers.Conv2DLayer),
                 ('pool1', layers.Pool2DLayer),
+                ('conv2', layers.Conv2DLayer),
+                ('pool2', layers.Pool2DLayer),
                 ('hidden1', layers.DenseLayer),
+                ('hidden2', layers.DenseLayer),
                 ('output', layers.DenseLayer)],
 
         # input
@@ -129,11 +78,25 @@ if __name__ == '__main__':
 
         # pool1
         pool1_pool_size=(2, 2),
-        pool1_mode='max',   # try average_inc_pad later
+        pool1_mode='max',
+
+        # conv2
+        conv2_num_filters=filter_size2,
+        conv2_filter_size=(3, 3),
+        conv2_nonlinearity=rectify,
+        conv2_pad=1,
+
+        # pool2
+        pool2_pool_size=(2, 2),
+        pool2_mode='max',
 
         # hidden1
-        hidden1_num_units=300,
+        hidden1_num_units=1000,
         hidden1_nonlinearity=rectify,
+
+        # hidden2
+        hidden2_num_units=200,
+        hidden2_nonlinearity=rectify,
 
         # output
         output_num_units=num_labels,
@@ -141,9 +104,15 @@ if __name__ == '__main__':
 
         # Optimization
         update=nesterov_momentum,
-        update_learning_rate=0.01,
-        update_momentum=0.7,
-        max_epochs=100,
+        update_learning_rate=0.003,
+        update_momentum=0.5,
+        max_epochs=1000,
+
+        # Save best model
+        on_epoch_finished=[SaveBestModel('cnn3')],
+
+        # My train split
+        train_split=MyTrainSplit(eval_size=0.2),
 
         regression=False,
         verbose=2
@@ -154,6 +123,8 @@ if __name__ == '__main__':
     # layer_info(mdl)
 
     mdl.fit(X, y)
-    train_X, test_X, train_y, test_y = mdl.train_split(X, y, mdl)
-    preds = mdl.predict(test_X)
-    print classification_report(test_y, preds)
+    with open('cnn1.pkl', 'w') as f:
+        pickle.dump(mdl, f)
+    # train_X, test_X, train_y, test_y = mdl.train_split(X, y, mdl)
+    # preds = mdl.predict(test_X)
+    # print classification_report(test_y, preds)

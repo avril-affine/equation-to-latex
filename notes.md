@@ -1,7 +1,7 @@
 # Notes
 
 - write down which symbols to take out so can add them in later stages
-- size of input image for the net is hard coded in code/generate_imgs.py img_to_array()
+- size of input image for the net is hard coded in code/generate_imgs.py img_to_array() and latex_to_code.py predict_symbol()
 - removed \div and - from operators: opencv not recognizing any contour
 
 # Problems
@@ -9,7 +9,6 @@
 - different font sizes cv2.findcontour messes up on smaller fonts 
 (chose 35 fontsize for now)
 - some symbols are very similar
-- some symbols have more than one rectangle
 - "-" does not have a rectangle
 
 # TODO
@@ -20,8 +19,6 @@
     - create functions for all of these
 
 # Quick Problems
-    - map label indexes to names for algorithm prediction
-
 
 # Files
 
@@ -35,8 +32,15 @@ code/generate_images.py
 
 code/model.py
 
+code/latex_to_code.py
+
+- find_symbols: input a b/w image and output a list of bounding rectangles containg all the symbols in the image.
+- predict_symbol: used by generate latex(). predicts which symbol is contained in the rectangle.
+- generate_latex: takes input of all symbols and arranges them to latex code.
+
 imgs/: contains subfolders of images for every symbol
 
 data/images/: contains json for each subfolder of imgs and a compiled json
 
 data/*.csv: each file contains a list of symbols to convert to latex image
+

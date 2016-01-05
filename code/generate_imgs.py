@@ -19,7 +19,13 @@ def generate_images(path, values, fontsize=50, figsize=(5,5)):
     '''
     for val in values:
         fig, ax = plt.subplots(figsize=figsize)
-        ax.text(0.5, 0.5, '$%s$' % val, fontsize=fontsize,
+        # minus sign work around
+        if val == '-':
+            txt = '_'
+        else:
+            txt = '$%s$' % val
+            
+        ax.text(0.5, 0.5, txt, fontsize=fontsize,
                 ha='center', va='center')
         ax.axis('off')
         plt.savefig(path + str(val) + '_' + str(fontsize) + '.png')
