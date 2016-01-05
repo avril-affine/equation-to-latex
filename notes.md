@@ -14,12 +14,13 @@
 
 # TODO
 
-- add noise to images. will help with when other symbols get into cv2 border
 - train model and optimize tuning parameters (max_epochs, learning_rate, momentum)
 - create algorithm to convert to latex
-- create a flask webapp with bootstrap
+    - handle: \int, \frac, super/sub script
+    - create functions for all of these
 
 # Quick Problems
+    - map label indexes to names for algorithm prediction
 
 
 # Files
