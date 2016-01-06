@@ -39,24 +39,13 @@ class SaveBestModel(object):
             self.best = score
             # file_string = self.file_num.format(train_history[-1]['epoch'])
             # file_name = self.name + '_' + file_string + '.pkl'
-            with open(self.name, 'wb') as f:
-                pickle.dump(nn, f)
+            nn.save_params_to('cnn_weights.pkl')
 
 
-if __name__ == '__main__':
-    df = pd.read_json('compiled.json')
-    X = df['img']
-    X = list(X.map(lambda x: list(np.array(x, np.float32) / 255)).values)
-    X = np.array(X, dtype=np.float32)
-    X = X.reshape(X.shape[0], 1, X.shape[1], X.shape[2])
-    # y = df['label']
-    y = df['label_encode'].values.astype(np.int32)
-    # y = y.reshape(y.shape[0], 1)
-    num_labels = len(df['label'].unique())
-
+def build_model():
+    num_labels = 112
     filter_size1 = 50
     filter_size2 = 100
-
     mdl = NeuralNet(
         layers=[('input', layers.InputLayer),
                 ('conv1', layers.Conv2DLayer),
@@ -104,12 +93,12 @@ if __name__ == '__main__':
 
         # Optimization
         update=nesterov_momentum,
-        update_learning_rate=0.003,
-        update_momentum=0.5,
-        max_epochs=1000,
+        update_learning_rate=0.007,
+        update_momentum=0.6,
+        max_epochs=200,
 
         # Save best model
-        on_epoch_finished=[SaveBestModel('cnn3')],
+        on_epoch_finished=[SaveBestModel('cnn3.pkl')],
 
         # My train split
         train_split=MyTrainSplit(eval_size=0.2),
@@ -118,13 +107,26 @@ if __name__ == '__main__':
         verbose=2
     )
 
+    return mdl
+
+
+if __name__ == '__main__':
+    df = pd.read_json('compiled.json')
+    X = df['img']
+    X = list(X.map(lambda x: list(np.array(x, np.float32) / 255)).values)
+    X = np.array(X, dtype=np.float32)
+    X = X.reshape(X.shape[0], 1, X.shape[1], X.shape[2])
+    # y = df['label']
+    y = df['encode'].values.astype(np.int32)
+    # y = y.reshape(y.shape[0], 1)
+
+    mdl = build_model()
+
     # layer_info = PrintLayerInfo()
     # mdl.initialize()
     # layer_info(mdl)
 
     mdl.fit(X, y)
-    with open('cnn1.pkl', 'w') as f:
-        pickle.dump(mdl, f)
     # train_X, test_X, train_y, test_y = mdl.train_split(X, y, mdl)
     # preds = mdl.predict(test_X)
     # print classification_report(test_y, preds)

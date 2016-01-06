@@ -24,7 +24,7 @@ def generate_images(path, values, fontsize=50, figsize=(5,5)):
             txt = '_'
         else:
             txt = '$%s$' % val
-            
+
         ax.text(0.5, 0.5, txt, fontsize=fontsize,
                 ha='center', va='center')
         ax.axis('off')
@@ -113,18 +113,14 @@ def compile_images():
                 label_dir[label] = count
                 count += 1
 
-        df['label_encode'] = df['label'].map(label_dir)
+        df['encode'] = df['label'].map(label_dir)
         res = pd.concat((res, df), ignore_index=True)
 
-    res.to_json('data/images/compiled.json')
-    label_str = map(lambda x: str(x), label_dir.keys())
-    label_str = '\n'.join(label_str)
-    with open('data/images/labels.txt', 'w') as f:
-        f.write(label_str)
-
-    label_df = pd.DataFrame({'labels': label_dir.keys(),
-                             'encode': label_dir.values()})
-    label_df.to_csv('data/images/labels.csv', index=False)
+    res[['encode', 'img']].to_json('data/images/compiled.json')
+    res[['encode', 'label']].to_csv('data/images/labels.csv', index=False)
+    # label_df = pd.DataFrame({'labels': label_dir.keys(),
+    #                          'encode': label_dir.values()})
+    # label_df.to_csv('data/images/labels.csv', index=False)
 
 
 def add_noise(img):

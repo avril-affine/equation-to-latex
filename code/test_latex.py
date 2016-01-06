@@ -1,4 +1,5 @@
 from IPython.lib.latextools import latex_to_png
+from model import build_model
 import matplotlib.pyplot as plt
 from latex_to_code import *
 import cPickle as pickle
@@ -23,16 +24,17 @@ if __name__ == '__main__':
     img = cv2.imread(filename)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    print 'Finding symbols...'
-    rects = find_symbols(img)
-    rects.sort(key=lambda x: x[0])      # sort by xcoord
+    # print 'Finding symbols...'
+    # rects = find_symbols(img)
+    # rects.sort(key=lambda x: x[0])      # sort by xcoord
 
     print 'Loading model...'
-    with open('models/cnn.pkl', 'r') as f:
-        mdl = pickle.load(f)
+    mdl = build_model()
+    mdl.initialize()
+    mdl.load_params_from('models/cnn_weights.pkl')
     labels_df = pd.read_csv('data/images/labels.csv')
-    label_dict = dict(zip(labels_df['encode'], labels_df['labels']))
-    for rect in rects:
-        predict_symbol(mdl, img, rect, label_dict, show_rect=True)
+    label_dict = dict(zip(labels_df['encode'], labels_df['label']))
+#    for rect in rects:
+#        predict_symbol(mdl, img, rect, label_dict, show_rect=True)
 
-    print generate_latex(mdl, img, rects, label_dict)
+    print generate_latex(mdl, img, label_dict)

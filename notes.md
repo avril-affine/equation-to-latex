@@ -2,7 +2,7 @@
 
 - write down which symbols to take out so can add them in later stages
 - size of input image for the net is hard coded in code/generate_imgs.py img_to_array() and latex_to_code.py predict_symbol()
-- removed \div and - from operators: opencv not recognizing any contour
+- removed \div from operators: opencv not recognizing any contour
 
 # Problems
 
@@ -17,6 +17,8 @@
 - create algorithm to convert to latex
     - handle: \int, \frac, super/sub script
     - create functions for all of these
+
+- generate latex algorithm: go left to right. if "-" then check if is \frac by comparing if there is anything above and below
 
 # Quick Problems
 
