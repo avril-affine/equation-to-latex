@@ -27,7 +27,7 @@ def submit():
 if __name__ == '__main__':
     mdl = build_model()
     mdl.initialize()
-    mdl.load_params_from('models/cnn_weights.pkl')
+    mdl.load_params_from('models/cnn_final_nonoise.pkl')
     labels_df = pd.read_csv('data/images/labels.csv')
     label_dict = dict(zip(labels_df['encode'], labels_df['label']))
 
