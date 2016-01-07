@@ -46,7 +46,8 @@ def get_img(filename):
     contours, hier = cv2.findContours(img_thresh.copy(), cv2.RETR_TREE,
                                       cv2.CHAIN_APPROX_SIMPLE)
     rect = map(cv2.boundingRect, contours)
-    rect = rect[-1]
+    outer_index = np.where(hier[0][:,-1] == -1)[0][0]
+    rect = rect[outer_index]
     cropped = img_gray[rect[1]:(rect[1] + rect[3]),
                        rect[0]:(rect[0] + rect[2])]
 
@@ -78,14 +79,17 @@ def img_to_array(path, n_noise=100):
         img = get_img(path + '/' + f)
         img = cv2.resize(img, (28, 28), interpolation=cv2.INTER_AREA)
         label = f.split('_')[0]
-        if n_noise > 0:
-            for _ in xrange(n_noise):
-                img_dict['label'].append(label)
-                noise_img = add_noise(img)
-                img_dict['img'].append(noise_img)
-        else:
+        for _ in xrange(n_noise):
             img_dict['label'].append(label)
             img_dict['img'].append(img)
+        # if n_noise > 0:
+        #     for _ in xrange(n_noise):
+        #         img_dict['label'].append(label)
+        #         noise_img = add_noise(img)
+        #         img_dict['img'].append(noise_img)
+        # else:
+        #     img_dict['label'].append(label)
+        #     img_dict['img'].append(img)
 
     filename = path.split('/')[-1]
     df = pd.DataFrame(img_dict)

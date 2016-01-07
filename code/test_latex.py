@@ -17,7 +17,7 @@ def create_latex(filename, eq, fontsize=50):
 
 if __name__ == '__main__':
     filename = 'test.png'
-    eq = r'\alpha+\beta'
+    eq = r'\alpha + \beta'
     print 'Creating File...'
     create_latex(filename, eq)
     print 'Reading Image...'
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     print 'Loading model...'
     mdl = build_model()
     mdl.initialize()
-    mdl.load_params_from('models/cnn_weights.pkl')
+    mdl.load_params_from('models/cnn_final_nonoise.pkl')
     labels_df = pd.read_csv('data/images/labels.csv')
     label_dict = dict(zip(labels_df['encode'], labels_df['label']))
 #    for rect in rects:

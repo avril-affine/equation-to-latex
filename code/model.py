@@ -39,7 +39,7 @@ class SaveBestModel(object):
             self.best = score
             # file_string = self.file_num.format(train_history[-1]['epoch'])
             # file_name = self.name + '_' + file_string + '.pkl'
-            nn.save_params_to('cnn_weights.pkl')
+            nn.save_params_to(self.name)
 
 
 def build_model():
@@ -98,7 +98,7 @@ def build_model():
         max_epochs=200,
 
         # Save best model
-        on_epoch_finished=[SaveBestModel('cnn3.pkl')],
+        on_epoch_finished=[SaveBestModel('cnn_weights_nonoise.pkl')],
 
         # My train split
         train_split=MyTrainSplit(eval_size=0.2),
@@ -127,6 +127,7 @@ if __name__ == '__main__':
     # layer_info(mdl)
 
     mdl.fit(X, y)
+    mdl.save_params_to('cnn_final_nonoise.pkl')
     # train_X, test_X, train_y, test_y = mdl.train_split(X, y, mdl)
     # preds = mdl.predict(test_X)
     # print classification_report(test_y, preds)
