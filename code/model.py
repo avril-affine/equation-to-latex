@@ -42,8 +42,7 @@ class SaveBestModel(object):
             nn.save_params_to(self.name)
 
 
-def build_model():
-    num_labels = 112
+def build_model(num_labels):
     filter_size1 = 50
     filter_size2 = 100
     mdl = NeuralNet(
@@ -118,7 +117,8 @@ def main():
     X = X.reshape(X.shape[0], 1, X.shape[1], X.shape[2])
     y = df['encode'].values.astype(np.int32)
 
-    mdl = build_model()
+    num_labels = len(y.unique())
+    mdl = build_model(num_labels)
 
     # layer_info = PrintLayerInfo()
     # mdl.initialize()

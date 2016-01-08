@@ -2,7 +2,9 @@
 
 - write down which symbols to take out so can add them in later stages
 - size of input image for the net is hard coded in code/generate_imgs.py img_to_array() and latex_to_code.py predict_symbol()
-- removed \div from operators: opencv not recognizing any contour
+- removed \div, \geq, \leq, \Xi from operators: opencv not recognizing any contour
+- webapp.py depends on code/model.py and code/Latex2Code.py
+- run webapp from top folder
 
 # Problems
 

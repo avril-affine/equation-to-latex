@@ -25,34 +25,65 @@ class Latex2Code(object):
             symbol = self.predict_symbol(i)
             self.symbols.append(symbol)
 
-        # handle formatted stuff
-        latex = r''
-        format_symbols = tuple()
+        return self._generate_frac_latex(r'', tuple(),
+                                         range(len(self.symbols)))
+
+
+    def _generate_frac_latex(self, latex_in, format_in, rect_indexes):
+        latex = latex_in
+        format_symbols = format_in
         i = 0
-        # for i, symbol in enumerate(self.symbols):
-        while i < len(self.symbols):
-            # test for fraction
-            if symbol != '-':
-                above, below = self._get_frac_rects(self, i)
+        while i < len(rect_indexes):
+            index = rect_indexes[i]
+            symbol = self.symbols[index]
+            if symbol in [r'\geq', '=', '-', r'\leq']:
+                above, below = \
+                    self._get_frac_rects(index, rect_indexes)
                 if above:
-                    numer = generate_latex(above)
-                    denom = generate_latex(below)
+                    numer = self._generate_frac_latex(latex,
+                                                      format_symbols, above)
+                    denom = self._generate_frac_latex(latex,
+                                                      format_symbols, below)
                     format_symbols += (numer, denom)
                     latex += r'\frac{%s}{%s}'
-                    i += len(above) + len(below)    # move past fraction
+                    i += len(above) + len(below)
                 else:
                     latex += symbol
-            # can test for other stuff here
             else:
                 latex += symbol
+            i += 1
 
-        # return ' '.join(self.symbols)     # only handles one line
         return latex % format_symbols
 
 
-    def _generate_frac_latex(self, rect_indexes):
-        symbols = map(lambda i: self.symbols[i], rect_indexes)
-        return ' '.join(symbols)            # only handles one line
+    def _get_frac_rects(self, frac_index, line_indexes):
+        above = []
+        below = []
+
+        frac = self.rects[frac_index]
+        for i in line_indexes:
+            if i == frac_index:
+                continue
+
+            rect = self.rects[i]
+            # test x axis
+            frac_left = frac[0]
+            frac_right = frac[0] + frac[2]
+            rect_left = rect[0]
+            rect_right = rect[0] + rect[2]
+
+            if rect_left < frac_left or rect_right > frac_right:
+                continue
+
+            # test y axis
+            frac_y = frac[1]
+            rect_y = rect[1]
+            if rect_y < frac_y:
+                above.append(i)
+            else:
+                below.append(i)
+
+        return above, below
 
 
     def dilate(self, ary, N, iterations):
@@ -136,36 +167,6 @@ class Latex2Code(object):
             plt.show()
 
         return pred
-
-
-    def _get_frac_rects(self, frac_index):
-        above = []
-        below = []
-
-        frac = self.rects[frac_index]
-        for i in xrange(len(self.rects)):
-            if i == frac_index:
-                continue
-
-            rect = self.rects[i]
-            # test x axis
-            frac_left = frac[0]
-            frac_right = frac[0] + frac[2]
-            rect_left = rect[0]
-            rect_right = rect[0] + rect[2]
-
-            if rect_left < frac_left or rect_right > frac_right:
-                continue
-
-            # test y axis
-            frac_y = frac[1]
-            rect_y = rect[1]
-            if rect_y > frac_y:
-                above.append(i)
-            else:
-                below.append(i)
-
-        return above, below
 
 
     def _get_left(self, rect_index, img_rects):
