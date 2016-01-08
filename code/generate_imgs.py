@@ -48,14 +48,17 @@ def get_img(filename):
     rect = map(cv2.boundingRect, contours)
     outer_index = np.where(hier[0][:,-1] == -1)[0][0]
     rect = rect[outer_index]
-    cropped = img_gray[rect[1]:(rect[1] + rect[3]),
-                       rect[0]:(rect[0] + rect[2])]
 
-    # pt1 = int(rect[1] + rect[3] // 2)
-    # pt2 = int(rect[0] + rect[2] // 2)
-    # cropped = img[pt1:pt1+rect[3], pt2:pt2+rect[2]]
-    # cropped = img[rect[0]:rect[3], rect[1]:rect[2]]
-    # return img, rect, cropped
+    x_pad = 0
+    y_pad = 0
+    pad_size = 10
+    if rect[2] < 15:
+        x_pad = pad_size
+    if rect[3] < 15:
+        y_pad = pad_size
+    cropped = img_gray[(rect[1] - y_pad):(rect[1] + rect[3] + y_pad),
+                       (rect[0] - x_pad):(rect[0] + rect[2] + x_pad)]
+
     return cropped
 
 
@@ -122,9 +125,6 @@ def compile_images():
 
     res[['encode', 'img']].to_json('data/images/compiled.json')
     res[['encode', 'label']].to_csv('data/images/labels.csv', index=False)
-    # label_df = pd.DataFrame({'labels': label_dir.keys(),
-    #                          'encode': label_dir.values()})
-    # label_df.to_csv('data/images/labels.csv', index=False)
 
 
 def add_noise(img):
@@ -179,7 +179,7 @@ def main():
     if len(sys.argv) > 1:
         n_noise = int(sys.argv[1])
     else:
-        n_noise = 0
+        n_noise = 1
 
     print 'Converting images to matrices...'
     img_to_array('imgs/numbers', n_noise)

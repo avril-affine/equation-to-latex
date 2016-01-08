@@ -20,6 +20,8 @@
 
 - generate latex algorithm: go left to right. if "-" then check if is \frac by comparing if there is anything above and below
 
+- add buffer to images that are small in either dimension
+
 # Quick Problems
 
 # Files

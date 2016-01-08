@@ -110,15 +110,13 @@ def build_model():
     return mdl
 
 
-if __name__ == '__main__':
+def main():
     df = pd.read_json('compiled.json')
     X = df['img']
     X = list(X.map(lambda x: list(np.array(x, np.float32) / 255)).values)
     X = np.array(X, dtype=np.float32)
     X = X.reshape(X.shape[0], 1, X.shape[1], X.shape[2])
-    # y = df['label']
     y = df['encode'].values.astype(np.int32)
-    # y = y.reshape(y.shape[0], 1)
 
     mdl = build_model()
 
@@ -128,6 +126,7 @@ if __name__ == '__main__':
 
     mdl.fit(X, y)
     mdl.save_params_to('cnn_final_nonoise.pkl')
-    # train_X, test_X, train_y, test_y = mdl.train_split(X, y, mdl)
-    # preds = mdl.predict(test_X)
-    # print classification_report(test_y, preds)
+
+
+if __name__ == '__main__':
+    main()
