@@ -22,6 +22,8 @@ if __name__ == '__main__':
     # eq = r'\frac{x+y}{z+w}'
     eq = r'\frac{\frac{3}{4}+y}{z+w}'
     # eq = r'x-y'
+    # eq = r'a+b=c'
+    # eq = r'81 \leq x \geq 192=-1'
     print 'Creating File...'
     create_latex(filename, eq, fontsize=100)
     print 'Reading Image...'
@@ -39,10 +41,10 @@ if __name__ == '__main__':
     num_labels = len(label_dict)
     mdl = build_model(num_labels)
     mdl.initialize()
-    mdl.load_params_from('models/cnn_final_pad.pkl')
+    mdl.load_params_from('models/cnn_handle_frac_last.pkl')
 #    for rect in rects:
 #        predict_symbol(mdl, img, rect, label_dict, show_rect=True)
 
-    latex = Latex2Code(mdl, img, label_dict, verbose=False)
-    print latex.run()
+    latex = Latex2Code(mdl, label_dict, verbose=True)
+    print latex.to_latex(img)
     # print generate_latex(mdl, img, label_dict)

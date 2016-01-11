@@ -11,6 +11,10 @@ import numpy as np
 
 
 class MyTrainSplit(TrainSplit):
+    '''
+    Class to modify nolearn's train split so that each class has the
+    same amount in the train and test.
+    '''
     def __call__(self, X, y, net):
         train_index = []
         test_index = []
@@ -23,9 +27,12 @@ class MyTrainSplit(TrainSplit):
 
 
 class SaveBestModel(object):
+    '''
+    Class to save the model if the validation accuracy improves.
+    '''
     def __init__(self, name):
         self.best = 0.
-        self.name = name
+        self.name = name.split('.')[0]
         # self.file_num = None
 
 
@@ -39,10 +46,14 @@ class SaveBestModel(object):
             self.best = score
             # file_string = self.file_num.format(train_history[-1]['epoch'])
             # file_name = self.name + '_' + file_string + '.pkl'
-            nn.save_params_to(self.name)
+            nn.save_params_to(self.name + '.pkl')
+        nn.save_params_to(self.name + '_last.pkl')
 
 
 def build_model(num_labels):
+    '''
+    Builds a nolearn neural net. Also used to load a pickled model.
+    '''
     filter_size1 = 50
     filter_size2 = 100
     mdl = NeuralNet(
@@ -97,7 +108,7 @@ def build_model(num_labels):
         max_epochs=200,
 
         # Save best model
-        on_epoch_finished=[SaveBestModel('cnn_weights_nonoise.pkl')],
+        on_epoch_finished=[SaveBestModel('cnn_handle_frac.pkl')],
 
         # My train split
         train_split=MyTrainSplit(eval_size=0.2),
@@ -117,7 +128,7 @@ def main():
     X = X.reshape(X.shape[0], 1, X.shape[1], X.shape[2])
     y = df['encode'].values.astype(np.int32)
 
-    num_labels = len(y.unique())
+    num_labels = len(np.unique(y))
     mdl = build_model(num_labels)
 
     # layer_info = PrintLayerInfo()
@@ -125,7 +136,6 @@ def main():
     # layer_info(mdl)
 
     mdl.fit(X, y)
-    mdl.save_params_to('cnn_final_nonoise.pkl')
 
 
 if __name__ == '__main__':

@@ -6,18 +6,47 @@ from sklearn.externals import joblib
 
 
 class Latex2Code(object):
+    '''
+    Class to encapsulate all the data needed to convert an image to latex
+    code.
 
-    def __init__(self, mdl, img, label_dict, verbose=False):
+    Parameters:
+    mdl: (object) The model to use to predict each symbol
+    img: (np array) A gray scale image to be converted to latex code
+    img_orig: (np array) Original image used to display cropped out
+    images for debugging
+    label_dict: (dict) A dictionary to convert labels back to their
+    string reprentation
+    verbose: (boolean) Used for debugging
+    symbols: (list) A list of the string representation of the symbols
+    rects: (list) A list of rectangles for the bounding box of each symbol
+    '''
+
+    def __init__(self, mdl, label_dict, verbose=False):
+        '''
+        Init method
+
+        '''
         self.mdl = mdl
-        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        self.img = img_gray
-        self.img_orig = img
         self.label_dict = label_dict
         self.verbose = verbose
         self.symbols = []
+        self.rects = []
 
 
-    def run(self):
+    def to_latex(self, img):
+        '''
+        Takes an image and returns the latex code string.
+
+        input:
+        img: (np array) The image to be converted
+
+        output: (string) Latex code in string form
+        '''
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        self.img = img_gray
+        self.img_orig = img
+
         rects = self.find_symbols()
         rects.sort(key=lambda x: x[0])      # sort by x coord
         self.rects = rects
@@ -30,16 +59,27 @@ class Latex2Code(object):
 
 
     def _generate_frac_latex(self, latex_in, format_in, rect_indexes):
+        '''
+        Function to check for fraction formatting
+
+        input:
+        latex_in: (string) The accumulated latex code string
+        format_in: (tuple) Tuple of strings to be inserted into latex_in
+        rect_indexes: (list) List of rectangles to be considered within the
+        function
+
+        output: (string) The string of the latex code
+        '''
         latex = latex_in
         format_symbols = format_in
         i = 0
         while i < len(rect_indexes):
             index = rect_indexes[i]
             symbol = self.symbols[index]
-            if symbol in [r'\geq', '=', '-', r'\leq']:
+            if symbol == '-':
                 above, below = \
                     self._get_frac_rects(index, rect_indexes)
-                if above:
+                if below:
                     numer = self._generate_frac_latex(latex,
                                                       format_symbols, above)
                     denom = self._generate_frac_latex(latex,
@@ -47,6 +87,16 @@ class Latex2Code(object):
                     format_symbols += (numer, denom)
                     latex += r'\frac{%s}{%s}'
                     i += len(above) + len(below)
+                elif above:         # handle >= <= and =
+                                    # assumes bottom - is always first
+                    above_symbol = self.symbols[above[0]]
+                    if above_symbol == '>':
+                        latex += r'\geq '
+                    elif above_symbol == '<':
+                        latex += r'\leq '
+                    elif above_symbol == '-':
+                        latex += '='
+                    i += 1
                 else:
                     latex += symbol
             else:
@@ -57,6 +107,17 @@ class Latex2Code(object):
 
 
     def _get_frac_rects(self, frac_index, line_indexes):
+        '''
+        Gets the rectangles that are within the bounds of the fraction symbol
+
+        input:
+        frac_index: (int) The index for the fraction symbol in the self.rects
+        list
+        line_indexes: (list) List of indexes to be considered
+
+        output: (2-tuple) Two lists containing indexes for the above and
+        below bounding rectangles.
+        '''
         above = []
         below = []
 
@@ -141,6 +202,15 @@ class Latex2Code(object):
 
 
     def predict_symbol(self, rect_index):
+        '''
+        Crops the inputted symbol out of the image a returns a prediction
+        for that symbol.
+
+        input:
+        rect_index: (list) A bounding box for the symbol to be predicted
+
+        output: (string) The string of the predicted symbol
+        '''
         rect = self.rects[rect_index]
         x_pad = 0
         y_pad = 0
@@ -170,6 +240,17 @@ class Latex2Code(object):
 
 
     def _get_left(self, rect_index, img_rects):
+        '''
+        Gets the closest rectangle to the left of the target
+        NOT USED YET. FOR SUPER/SUBSCRIPT!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        input:
+        rect_index: (int) Index for the target rectangle
+        img_rects: (list) List of rectangles to be considered
+
+        output: (list) The bounding box for the closest rectangle to the
+        left of the target
+        '''
         rect = self.rects[rect_index]
         # find all rects to the left of rect
         rect_leftx = rect[0]
@@ -192,12 +273,22 @@ class Latex2Code(object):
             return closest
 
 
-    def _is_subscript(self, rect_index, img_rects, labels):
+    def _is_subscript(self, rect_index, img_rects):
+        '''
+        Checks whether the symbol is a subscript or not
+        NOT IMPLEMENTED YET!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        input:
+        rect_index: (int) The index to check if is a subscript
+        img_rects: (list) List of rectangles to be considered
+
+        output: (boolean) True if rect_index is a subscript
+        '''
         rect = self.rects[rect_index]
-        left = get_left(rect_img_rects)
+        left = self._get_left(rect_img_rects)
         mask = map(lambda r: all(left == r), img_rects)
         left_index = np.where(mask)[0][0]
-        left_label = labels[left_index]
+        left_label = self.label_dict[left_index]
         if left_label == '-':
             return False
 
