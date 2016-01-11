@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.externals import joblib
+# from sklearn.externals import joblib
 
 
 class Latex2Code(object):
@@ -299,5 +299,5 @@ if __name__ == '__main__':
 
     rects = find_symbols(img)
 
-    mdl = joblib.load('models/cnn.pkl')
+    # mdl = joblib.load('models/cnn.pkl')
     symbols = generate_latex(mdl, img, rects)
