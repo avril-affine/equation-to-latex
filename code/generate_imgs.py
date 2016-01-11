@@ -49,6 +49,7 @@ def get_img(filename):
     outer_index = np.where(hier[0][:,-1] == -1)[0][0]
     rect = rect[outer_index]
 
+    # padding for small images like: -, ., etc.
     x_pad = 0
     y_pad = 0
     pad_size = 10
@@ -68,31 +69,29 @@ def test_get_img(filename):
     plt.show()
 
 
-def img_to_array(path, n_noise=100):
+def img_to_array(path, n=100, noise=False):
     '''
     Converts all images in path to a 28x28 matrix representation of the
     image and creates new images with noise in them.
 
     input: path - (string) Folder containing images to be converted
-           n_noise - (int) Number of noise images to add. If 0, then just the
-                     original image without noise will be saved.
+           n - (int) Number of noise images to add. If 0, then just the
+               original image without noise will be saved.
     '''
     img_dict = {'label': [], 'img': []}
     for f in os.listdir(path):
         img = get_img(path + '/' + f)
         img = cv2.resize(img, (28, 28), interpolation=cv2.INTER_AREA)
         label = f.split('_')[0]
-        for _ in xrange(n_noise):
-            img_dict['label'].append(label)
-            img_dict['img'].append(img)
-        # if n_noise > 0:
-        #     for _ in xrange(n_noise):
-        #         img_dict['label'].append(label)
-        #         noise_img = add_noise(img)
-        #         img_dict['img'].append(noise_img)
-        # else:
-        #     img_dict['label'].append(label)
-        #     img_dict['img'].append(img)
+        if noise:
+            for _ in xrange(n):
+                img_dict['label'].append(label)
+                noise_img = add_noise(img)
+                img_dict['img'].append(noise_img)
+        else:
+            for _ in xrange(n):
+                img_dict['label'].append(label)
+                img_dict['img'].append(img)
 
     filename = path.split('/')[-1]
     df = pd.DataFrame(img_dict)

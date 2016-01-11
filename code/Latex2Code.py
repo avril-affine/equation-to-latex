@@ -76,12 +76,16 @@ class Latex2Code(object):
         while i < len(rect_indexes):
             index = rect_indexes[i]
             symbol = self.symbols[index]
+
+            # '-' case includes fraction, -, \leq, =, \geq
             if symbol == '-':
                 above, below = \
                     self._get_frac_rects(index, rect_indexes)
-                if below:
+                if below:           # fraction case
+                    # recursive call for numerator line
                     numer = self._generate_frac_latex(latex,
                                                       format_symbols, above)
+                    # recursive call for denominator line
                     denom = self._generate_frac_latex(latex,
                                                       format_symbols, below)
                     format_symbols += (numer, denom)
@@ -97,9 +101,9 @@ class Latex2Code(object):
                     elif above_symbol == '-':
                         latex += '='
                     i += 1
-                else:
+                else:               # - case
                     latex += symbol
-            else:
+            else:                   # all other cases
                 latex += symbol
             i += 1
 
@@ -133,6 +137,7 @@ class Latex2Code(object):
             rect_left = rect[0]
             rect_right = rect[0] + rect[2]
 
+            # rect is not within the - bounds
             if rect_left < frac_left or rect_right > frac_right:
                 continue
 
@@ -164,8 +169,6 @@ class Latex2Code(object):
         Finds all symbols in an image and returns the rectangles that border
         them. Assumes the input is in gray scale.
         '''
-        # img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        # ret, img_thresh = cv2.threshold(img_gray, 50, 255, cv2.THRESH_BINARY_INV)
         ret, img_thresh = cv2.threshold(self.img, 50, 255,
                                         cv2.THRESH_BINARY_INV)
 
@@ -178,12 +181,6 @@ class Latex2Code(object):
             if h[-1] >= 0:
                 continue
             rect = cv2.boundingRect(c)
-            # rect_img = img.copy()
-            # cv2.rectangle(rect_img, (rect[0], rect[1]),
-            #               (rect[0] + rect[2], rect[1] + rect[3]),
-            #               (0, 255, 0), 3)
-            # plt.imshow(rect_img)
-            # plt.show()
 
             rects.append(rect)
 
@@ -212,6 +209,8 @@ class Latex2Code(object):
         output: (string) The string of the predicted symbol
         '''
         rect = self.rects[rect_index]
+
+        # padding for small symbols like -, ., etc.
         x_pad = 0
         y_pad = 0
         pad_size = 10
@@ -291,6 +290,22 @@ class Latex2Code(object):
         left_label = self.label_dict[left_index]
         if left_label == '-':
             return False
+
+    def cropImage(self):
+        '''
+        Display all rectangles found in image.
+        '''
+        crop_img = self.img_orig.copy()
+        for rect in self.rects:
+            cv2.rectangle(crop_img, (rect[0], rect[1]),
+                          (rect[0] + rect[2], rect[1] + rect[3]),
+                          (255, 0, 0), 3)
+        fig, ax = plt.subplots(figsize=(5, 5))
+        ax.axis('off')
+        plt.imshow(crop_img)
+        plt.savefig('symbol_img.png')
+        plt.close(fig)
+
 
 
 if __name__ == '__main__':

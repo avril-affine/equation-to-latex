@@ -4,7 +4,6 @@ from lasagne.updates import nesterov_momentum
 from nolearn.lasagne import NeuralNet
 from nolearn.lasagne import PrintLayerInfo
 from nolearn.lasagne import TrainSplit
-# from sklearn.metrics import classification_report
 import cPickle as pickle
 import pandas as pd
 import numpy as np
@@ -33,19 +32,12 @@ class SaveBestModel(object):
     def __init__(self, name):
         self.best = 0.
         self.name = name.split('.')[0]
-        # self.file_num = None
 
 
     def __call__(self, nn, train_history):
-#        if self.file_num is None:
-        # digits = len(str(nn.max_epochs))
-        # file_num = '0:0{}d'.format(digits)
-        # self.file_num = '{' + file_num + '}'
         score = train_history[-1]['valid_accuracy']
         if score > self.best:
             self.best = score
-            # file_string = self.file_num.format(train_history[-1]['epoch'])
-            # file_name = self.name + '_' + file_string + '.pkl'
             nn.save_params_to(self.name + '.pkl')
         nn.save_params_to(self.name + '_last.pkl')
 

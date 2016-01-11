@@ -20,10 +20,11 @@ def create_latex(filename, eq, fontsize=50, figsize=(5,5)):
 if __name__ == '__main__':
     filename = 'test.png'
     # eq = r'\frac{x+y}{z+w}'
-    eq = r'\frac{\frac{3}{4}+y}{z+w}'
+    eq = r'\frac{\frac{A}{\beta}+\gamma}{x+y}=z'
     # eq = r'x-y'
     # eq = r'a+b=c'
     # eq = r'81 \leq x \geq 192=-1'
+    # eq = r'\int \frac{1}{x}dx'
     print 'Creating File...'
     create_latex(filename, eq, fontsize=100)
     print 'Reading Image...'
@@ -47,4 +48,5 @@ if __name__ == '__main__':
 
     latex = Latex2Code(mdl, label_dict, verbose=True)
     print latex.to_latex(img)
+    latex.cropImage()
     # print generate_latex(mdl, img, label_dict)
