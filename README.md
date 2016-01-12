@@ -15,7 +15,6 @@ latex code based on positions and sizes.
 - matplotlib
 - cPickle
 - Flask
-- PIL
 
 # Example
 
