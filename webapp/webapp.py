@@ -2,33 +2,37 @@ import numpy as np
 import pandas as pd
 import cv2
 import cPickle as pickle
-from PIL import Image
-from latex_to_code import generate_latex
-from model import build_model
 from flask import Flask, render_template, request
+import os
+import sys
 app = Flask(__name__)
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', output=None)
 
 
 @app.route('/submit', methods=['POST'])
 def submit():
     file_input = request.files['input1']
-    img = Image.open(file_input)
-    img = np.array(img)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    latex_code = generate_latex(mdl, img, label_dict)
-    return latex_code
+    img = np.asarray(bytearray(file_input.read()), dtype=np.uint8)
+    img = cv2.imdecode(img, 1)
+    latex_code = Latex.to_latex(img)
+    return render_template('index.html', output=latex_code)
 
 
 if __name__ == '__main__':
-    mdl = build_model()
-    mdl.initialize()
-    mdl.load_params_from('models/cnn_final_nonoise.pkl')
-    labels_df = pd.read_csv('data/images/labels.csv')
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    os.sys.path.insert(1, parent_dir + '/code')
+    from Latex2Code import Latex2Code
+    from model import build_model
+
+    labels_df = pd.read_csv('../data/images/labels.csv')
     label_dict = dict(zip(labels_df['encode'], labels_df['label']))
+    mdl = build_model(len(label_dict))
+    mdl.initialize()
+    mdl.load_params_from('../models/cnn_handle_frac_last.pkl')
+    Latex = Latex2Code(mdl, label_dict)
 
     app.run(host='0.0.0.0', port=8080, debug=True)

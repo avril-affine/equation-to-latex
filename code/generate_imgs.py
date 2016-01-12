@@ -8,15 +8,15 @@ from IPython.lib.latextools import latex_to_png
 import matplotlib.pyplot as plt
 
 
-def generate_images(path, values, fontsize=50, figsize=(5,5)):
-    '''
-    Converts a list of values to latex images and saves them to specified
+def generate_images(path, values, fontsize=50, figsize=(5, 5)):
+    """Converts a list of values to latex images and saves them to specified
     path.
 
     input: path - (string) Specified path for images to be saved
            values - (list) List of values to be converted to latex images
            fontsize - (int) Font size for the symbol
-    '''
+    """
+
     for val in values:
         fig, ax = plt.subplots(figsize=figsize)
         # minus sign work around
@@ -33,11 +33,11 @@ def generate_images(path, values, fontsize=50, figsize=(5,5)):
 
 
 def get_img(filename):
-    '''
-    Crops an image out of a file leaving only the symbol
+    """Crops an image out of a file leaving only the symbol
 
     input: filename: (string) path to the image file
-    '''
+    """
+
     img = cv2.imread(filename)
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # img_gray = cv2.GaussianBlur(img_gray, (5, 5), 0)
@@ -46,7 +46,7 @@ def get_img(filename):
     contours, hier = cv2.findContours(img_thresh.copy(), cv2.RETR_TREE,
                                       cv2.CHAIN_APPROX_SIMPLE)
     rect = map(cv2.boundingRect, contours)
-    outer_index = np.where(hier[0][:,-1] == -1)[0][0]
+    outer_index = np.where(hier[0][:, -1] == -1)[0][0]
     rect = rect[outer_index]
 
     # padding for small images like: -, ., etc.
@@ -60,6 +60,7 @@ def get_img(filename):
     cropped = img_gray[(rect[1] - y_pad):(rect[1] + rect[3] + y_pad),
                        (rect[0] - x_pad):(rect[0] + rect[2] + x_pad)]
 
+    print filename, rect[1] + rect[3], rect[2] * rect[3]
     return cropped
 
 
@@ -70,14 +71,14 @@ def test_get_img(filename):
 
 
 def img_to_array(path, n=100, noise=False):
-    '''
-    Converts all images in path to a 28x28 matrix representation of the
+    """Converts all images in path to a 28x28 matrix representation of the
     image and creates new images with noise in them.
 
     input: path - (string) Folder containing images to be converted
            n - (int) Number of noise images to add. If 0, then just the
                original image without noise will be saved.
-    '''
+    """
+
     img_dict = {'label': [], 'img': []}
     for f in os.listdir(path):
         img = get_img(path + '/' + f)
@@ -99,10 +100,10 @@ def img_to_array(path, n=100, noise=False):
 
 
 def compile_images():
-    '''
-    Compiles a folder of json files to a single json and converts labels
-    to appropriate ints
-    '''
+    """Compiles a folder of json files to a single json and converts labels
+    to appropriate ints.
+    """
+
     res = pd.DataFrame({'label': [], 'img': []})
     label_dir = {}
     count = 0
@@ -127,12 +128,12 @@ def compile_images():
 
 
 def add_noise(img):
-    '''
-    Adds noise to inputted image.
+    """Adds noise to inputted image.
 
     input: img - A numpy array representing an image.
     output: (numpy array) - New image with noise added.
-    '''
+    """
+
     noise = np.zeros(img.shape, dtype=np.uint8)
     cv2.randn(noise, 0, 150)
     new_img = img + noise
@@ -140,9 +141,8 @@ def add_noise(img):
 
 
 def rm_images():
-    '''
-    Removes all images before running the program.
-    '''
+    """Removes all images before running the program."""
+
     paths = ['imgs/numbers/',
              'imgs/letters/lower/',
              'imgs/letters/upper/',
@@ -150,6 +150,7 @@ def rm_images():
              'imgs/letters/greek_upper/',
              'imgs/operators/',
              'data/images/']
+
     for path in paths:
         for f in os.listdir(path):
             os.remove(path + f)

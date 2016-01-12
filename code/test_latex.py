@@ -25,10 +25,12 @@ if __name__ == '__main__':
     # eq = r'a+b=c'
     # eq = r'81 \leq x \geq 192=-1'
     # eq = r'\int \frac{1}{x}dx'
+    # eq = r'yA_{Ay}^{xy}'
     print 'Creating File...'
     create_latex(filename, eq, fontsize=100)
     print 'Reading Image...'
     img = cv2.imread(filename)
+    print img.shape
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # print 'Finding symbols...'

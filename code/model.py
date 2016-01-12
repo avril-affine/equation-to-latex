@@ -10,10 +10,9 @@ import numpy as np
 
 
 class MyTrainSplit(TrainSplit):
-    '''
-    Class to modify nolearn's train split so that each class has the
+    """Class to modify nolearn's train split so that each class has the
     same amount in the train and test.
-    '''
+    """
     def __call__(self, X, y, net):
         train_index = []
         test_index = []
@@ -26,13 +25,10 @@ class MyTrainSplit(TrainSplit):
 
 
 class SaveBestModel(object):
-    '''
-    Class to save the model if the validation accuracy improves.
-    '''
+    """Class to save the model if the validation accuracy improves."""
     def __init__(self, name):
         self.best = 0.
         self.name = name.split('.')[0]
-
 
     def __call__(self, nn, train_history):
         score = train_history[-1]['valid_accuracy']
@@ -43,9 +39,7 @@ class SaveBestModel(object):
 
 
 def build_model(num_labels):
-    '''
-    Builds a nolearn neural net. Also used to load a pickled model.
-    '''
+    """Builds a nolearn neural net. Also used to load a pickled model."""
     filter_size1 = 50
     filter_size2 = 100
     mdl = NeuralNet(

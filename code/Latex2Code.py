@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class Latex2Code(object):
-    '''
-    Class to encapsulate all the data needed to convert an image to latex
+    """Class to encapsulate all the data needed to convert an image to latex
     code.
 
     Parameters:
@@ -20,29 +19,26 @@ class Latex2Code(object):
     verbose: (boolean) Used for debugging
     symbols: (list) A list of the string representation of the symbols
     rects: (list) A list of rectangles for the bounding box of each symbol
-    '''
+    """
 
     def __init__(self, mdl, label_dict, verbose=False):
-        '''
-        Init method
-
-        '''
+        """Init method"""
         self.mdl = mdl
         self.label_dict = label_dict
         self.verbose = verbose
         self.symbols = []
         self.rects = []
-
+        self.subscript = []
+        self.superscript = []
 
     def to_latex(self, img):
-        '''
-        Takes an image and returns the latex code string.
+        """Takes an image and returns the latex code string.
 
         input:
         img: (np array) The image to be converted
 
         output: (string) Latex code in string form
-        '''
+        """
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         self.img = img_gray
         self.img_orig = img
@@ -57,10 +53,8 @@ class Latex2Code(object):
         return self._generate_frac_latex(r'', tuple(),
                                          range(len(self.symbols)))
 
-
     def _generate_frac_latex(self, latex_in, format_in, rect_indexes):
-        '''
-        Function to check for fraction formatting
+        """Function to check for fraction formatting
 
         input:
         latex_in: (string) The accumulated latex code string
@@ -69,7 +63,7 @@ class Latex2Code(object):
         function
 
         output: (string) The string of the latex code
-        '''
+        """
         latex = latex_in
         format_symbols = format_in
         i = 0
@@ -109,10 +103,9 @@ class Latex2Code(object):
 
         return latex % format_symbols
 
-
     def _get_frac_rects(self, frac_index, line_indexes):
-        '''
-        Gets the rectangles that are within the bounds of the fraction symbol
+        """Gets the rectangles that are within the bounds of the fraction
+        symbol.
 
         input:
         frac_index: (int) The index for the fraction symbol in the self.rects
@@ -121,7 +114,7 @@ class Latex2Code(object):
 
         output: (2-tuple) Two lists containing indexes for the above and
         below bounding rectangles.
-        '''
+        """
         above = []
         below = []
 
@@ -151,24 +144,22 @@ class Latex2Code(object):
 
         return above, below
 
-
     def dilate(self, ary, N, iterations):
         """Dilate using an NxN '+' sign shape. ary is np.uint8."""
-        kernel = np.zeros((N,N), dtype=np.uint8)
-        kernel[(N-1)/2,:] = 1
+        kernel = np.zeros((N, N), dtype=np.uint8)
+        kernel[(N-1)/2, :] = 1
         dilated_image = cv2.dilate(ary / 255, kernel, iterations=iterations)
 
-        kernel = np.zeros((N,N), dtype=np.uint8)
-        kernel[:,(N-1)/2] = 1
-        dilated_image = cv2.dilate(dilated_image, kernel, iterations=iterations)
+        kernel = np.zeros((N, N), dtype=np.uint8)
+        kernel[:, (N-1)/2] = 1
+        dilated_image = cv2.dilate(dilated_image, kernel,
+                                   iterations=iterations)
         return dilated_image
 
-
     def find_symbols(self):
-        '''
-        Finds all symbols in an image and returns the rectangles that border
-        them. Assumes the input is in gray scale.
-        '''
+        """Finds all symbols in an image and returns the rectangles that
+        border them. Assumes the input is in gray scale.
+        """
         ret, img_thresh = cv2.threshold(self.img, 50, 255,
                                         cv2.THRESH_BINARY_INV)
 
@@ -197,17 +188,15 @@ class Latex2Code(object):
 
         return rects
 
-
     def predict_symbol(self, rect_index):
-        '''
-        Crops the inputted symbol out of the image a returns a prediction
+        """Crops the inputted symbol out of the image a returns a prediction
         for that symbol.
 
         input:
         rect_index: (list) A bounding box for the symbol to be predicted
 
         output: (string) The string of the predicted symbol
-        '''
+        """
         rect = self.rects[rect_index]
 
         # padding for small symbols like -, ., etc.
@@ -237,10 +226,8 @@ class Latex2Code(object):
 
         return pred
 
-
     def _get_left(self, rect_index, img_rects):
-        '''
-        Gets the closest rectangle to the left of the target
+        """Gets the closest rectangle to the left of the target
         NOT USED YET. FOR SUPER/SUBSCRIPT!!!!!!!!!!!!!!!!!!!!!!!!!
 
         input:
@@ -249,7 +236,7 @@ class Latex2Code(object):
 
         output: (list) The bounding box for the closest rectangle to the
         left of the target
-        '''
+        """
         rect = self.rects[rect_index]
         # find all rects to the left of rect
         rect_leftx = rect[0]
@@ -271,10 +258,8 @@ class Latex2Code(object):
 
             return closest
 
-
     def _is_subscript(self, rect_index, img_rects):
-        '''
-        Checks whether the symbol is a subscript or not
+        """Checks whether the symbol is a subscript or not
         NOT IMPLEMENTED YET!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         input:
@@ -282,7 +267,7 @@ class Latex2Code(object):
         img_rects: (list) List of rectangles to be considered
 
         output: (boolean) True if rect_index is a subscript
-        '''
+        """
         rect = self.rects[rect_index]
         left = self._get_left(rect_img_rects)
         mask = map(lambda r: all(left == r), img_rects)
@@ -292,9 +277,7 @@ class Latex2Code(object):
             return False
 
     def cropImage(self):
-        '''
-        Display all rectangles found in image.
-        '''
+        """Display all rectangles found in image."""
         crop_img = self.img_orig.copy()
         for rect in self.rects:
             cv2.rectangle(crop_img, (rect[0], rect[1]),
@@ -305,7 +288,6 @@ class Latex2Code(object):
         plt.imshow(crop_img)
         plt.savefig('symbol_img.png')
         plt.close(fig)
-
 
 
 if __name__ == '__main__':

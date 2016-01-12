@@ -23,8 +23,11 @@
                 <button type="submit" class="btn btn-primary">Submit</button>
                 <button type="reset" class="btn btn-default">Reset</button>
                 <hr>
-
             </form>
+
+            {% if output %}
+            <input type="text" value={{output}} style="width: 500px;">
+            {% endif %}
 
         </div>
     </body>
