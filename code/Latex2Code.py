@@ -24,12 +24,12 @@ class Latex2Code(object):
     def __init__(self, mdl, label_dict, verbose=False):
         """Init method"""
         self.mdl = mdl
-        self.label_dict = label_dict
+        self.label_dict = dict(zip(label_dict['encode'], label_dict['label']))
+        self.rect_area = dict(zip(label_dict['label'], label_dict['area']))
+        self.rect_base = dict(zip(label_dict['label'], label_dict['base']))
         self.verbose = verbose
         self.symbols = []
         self.rects = []
-        self.subscript = []
-        self.superscript = []
 
     def to_latex(self, img):
         """Takes an image and returns the latex code string.
@@ -50,23 +50,25 @@ class Latex2Code(object):
             symbol = self.predict_symbol(i)
             self.symbols.append(symbol)
 
-        return self._generate_frac_latex(r'', tuple(),
-                                         range(len(self.symbols)))
+        return self._generate_frac_latex(r'', [], range(len(self.symbols)))
 
     def _generate_frac_latex(self, latex_in, format_in, rect_indexes):
         """Function to check for fraction formatting
 
         input:
         latex_in: (string) The accumulated latex code string
-        format_in: (tuple) Tuple of strings to be inserted into latex_in
+        format_in: (list) List of strings to be inserted into latex_in
         rect_indexes: (list) List of rectangles to be considered within the
+        the format and a y-value that represent a line
         function
 
         output: (string) The string of the latex code
         """
         latex = latex_in
-        format_symbols = format_in
+        format_symbols = format_in[:]
+        lines = []
         i = 0
+        base = -1
         while i < len(rect_indexes):
             index = rect_indexes[i]
             symbol = self.symbols[index]
@@ -78,11 +80,14 @@ class Latex2Code(object):
                 if below:           # fraction case
                     # recursive call for numerator line
                     numer = self._generate_frac_latex(latex,
-                                                      format_symbols, above)
+                                                      format_symbols,
+                                                      above)
                     # recursive call for denominator line
                     denom = self._generate_frac_latex(latex,
-                                                      format_symbols, below)
-                    format_symbols += (numer, denom)
+                                                      format_symbols,
+                                                      below)
+                    format_symbols.append(numer)
+                    format_symbols.append(denom)
                     latex += r'\frac{%s}{%s}'
                     i += len(above) + len(below)
                 elif above:         # handle >= <= and =
@@ -98,10 +103,61 @@ class Latex2Code(object):
                 else:               # - case
                     latex += symbol
             else:                   # all other cases
-                latex += symbol
+                if base < 0:        # set base draw line
+                    base = self._calc_baseline(symbol, index)
+                    latex += symbol
+                else:
+                    rect_base = self._calc_baseline(symbol, index)
+
+                    # symbol is in current line
+                    if abs(rect_base - base) <= 20:
+                        latex += symbol
+                    else:
+                        found = False
+                        # check if symbol belongs to any current lines
+                        for line in reversed(lines):
+                            line_index = line[0]
+                            draw_line = line[1]
+
+                            # add to current line
+                            if abs(rect_base - draw_line) <= 5:
+                                format_symbols[line_index] += symbol
+                                found = True
+                                break
+
+                        # else create a new line
+                        if not found:
+                            if rect_base > base:
+                                latex += '_{%s}'
+                            else:
+                                latex += '^{%s}'
+                            lines.append((len(format_symbols), rect_base))
+                            format_symbols.append(symbol)
+
             i += 1
 
-        return latex % format_symbols
+        return latex % tuple(format_symbols)
+
+    def _calc_baseline(self, symbol, index):
+        """Calculate the line which the symbol was drawn on
+
+        input:
+        symbol: (string) The predicted symbol
+        index: (int) Index for which rect the symbol is in self.rects
+
+        output (int):
+        The line which the symbol was drawn on
+        """
+
+        rect = self.rects[index]
+        base_area = self.rect_area[symbol]
+        base_line = self.rect_base[symbol]
+
+        area = rect[2] * rect[3]
+        proportion = 1. * area / base_area
+        line = rect[1] + rect[3]
+
+        return line - int(base_line * proportion)
 
     def _get_frac_rects(self, frac_index, line_indexes):
         """Gets the rectangles that are within the bounds of the fraction

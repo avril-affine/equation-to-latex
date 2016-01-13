@@ -1,5 +1,9 @@
 # Notes
 
+- set baseline at bottom y-val of "0" and use for determining draw line
+- set the line base by normalizing by area, adding the difference to 
+base, and create new line when next normalized rect base is different.
+
 - write down which symbols to take out so can add them in later stages
 - size of input image for the net is hard coded in code/generate_imgs.py img_to_array() and latex_to_code.py predict_symbol()
 - removed \div, \geq, \leq, \Xi from operators: opencv not recognizing any contour

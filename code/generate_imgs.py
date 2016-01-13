@@ -60,8 +60,7 @@ def get_img(filename):
     cropped = img_gray[(rect[1] - y_pad):(rect[1] + rect[3] + y_pad),
                        (rect[0] - x_pad):(rect[0] + rect[2] + x_pad)]
 
-    print filename, rect[1] + rect[3], rect[2] * rect[3]
-    return cropped
+    return cropped, rect
 
 
 def test_get_img(filename):
@@ -79,20 +78,31 @@ def img_to_array(path, n=100, noise=False):
                original image without noise will be saved.
     """
 
-    img_dict = {'label': [], 'img': []}
+    global base
+    img_dict = {'label': [], 'img': [], 'area': [], 'base': []}
     for f in os.listdir(path):
-        img = get_img(path + '/' + f)
+        img, rect = get_img(path + '/' + f)
         img = cv2.resize(img, (28, 28), interpolation=cv2.INTER_AREA)
         label = f.split('_')[0]
-        if noise:
-            for _ in xrange(n):
-                img_dict['label'].append(label)
+
+        for _ in xrange(n):
+            if noise:
                 noise_img = add_noise(img)
                 img_dict['img'].append(noise_img)
-        else:
-            for _ in xrange(n):
-                img_dict['label'].append(label)
+            else:
                 img_dict['img'].append(img)
+            img_dict['label'].append(label)
+
+            # set area
+            area = rect[2] * rect[3]
+            img_dict['area'].append(area)
+
+            # calculate base drawing line
+            if not base:
+                base = rect[1] + rect[3]
+
+            rect_base = rect[1] + rect[3] - base
+            img_dict['base'].append(rect_base)
 
     filename = path.split('/')[-1]
     df = pd.DataFrame(img_dict)
@@ -104,11 +114,13 @@ def compile_images():
     to appropriate ints.
     """
 
-    res = pd.DataFrame({'label': [], 'img': []})
+    res = pd.DataFrame({'label': [], 'img': [], 'area': [], 'base': []})
     label_dir = {}
     count = 0
     for f in os.listdir('data/images'):
         df = pd.read_json('data/images/' + f)
+
+        # map label indexes
         labels = df['label'].unique()
         for label in labels:
             if label in label_dir:
@@ -119,12 +131,13 @@ def compile_images():
             else:
                 label_dir[label] = count
                 count += 1
-
         df['encode'] = df['label'].map(label_dir)
+
         res = pd.concat((res, df), ignore_index=True)
 
     res[['encode', 'img']].to_json('data/images/compiled.json')
-    res[['encode', 'label']].to_csv('data/images/labels.csv', index=False)
+    res[['encode', 'label', 'area', 'base']]\
+        .to_csv('data/images/labels.csv', index=False)
 
 
 def add_noise(img):
@@ -194,4 +207,5 @@ def main():
 
 
 if __name__ == '__main__':
+    base = None
     main()

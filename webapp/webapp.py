@@ -29,10 +29,10 @@ if __name__ == '__main__':
     from model import build_model
 
     labels_df = pd.read_csv('../data/images/labels.csv')
-    label_dict = dict(zip(labels_df['encode'], labels_df['label']))
-    mdl = build_model(len(label_dict))
+    num_labels = len(labels_df['label'].unique())
+    mdl = build_model(num_labels)
     mdl.initialize()
     mdl.load_params_from('../models/cnn_handle_frac_last.pkl')
-    Latex = Latex2Code(mdl, label_dict)
+    Latex = Latex2Code(mdl, labels_df)
 
     app.run(host='0.0.0.0', port=8080, debug=True)
