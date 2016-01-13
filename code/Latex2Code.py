@@ -282,56 +282,6 @@ class Latex2Code(object):
 
         return pred
 
-    def _get_left(self, rect_index, img_rects):
-        """Gets the closest rectangle to the left of the target
-        NOT USED YET. FOR SUPER/SUBSCRIPT!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        input:
-        rect_index: (int) Index for the target rectangle
-        img_rects: (list) List of rectangles to be considered
-
-        output: (list) The bounding box for the closest rectangle to the
-        left of the target
-        """
-        rect = self.rects[rect_index]
-        # find all rects to the left of rect
-        rect_leftx = rect[0]
-        lefts = []
-        for r in img_rects:
-            r_rightx = r[0] + r[2]
-            if r_rightx < rect_leftx:
-                lefts.append(r)
-
-        # get the closest one
-        if not lefts:
-            closest = lefts[0]
-            closest_rightx = closest[0] + closest[2]
-            for r in lefts:
-                r_rightx = r[0] + r[2]
-                if r_rightx > closest_rightx:
-                    closest_rightx = r_rightx
-                    closest = r
-
-            return closest
-
-    def _is_subscript(self, rect_index, img_rects):
-        """Checks whether the symbol is a subscript or not
-        NOT IMPLEMENTED YET!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        input:
-        rect_index: (int) The index to check if is a subscript
-        img_rects: (list) List of rectangles to be considered
-
-        output: (boolean) True if rect_index is a subscript
-        """
-        rect = self.rects[rect_index]
-        left = self._get_left(rect_img_rects)
-        mask = map(lambda r: all(left == r), img_rects)
-        left_index = np.where(mask)[0][0]
-        left_label = self.label_dict[left_index]
-        if left_label == '-':
-            return False
-
     def cropImage(self):
         """Display all rectangles found in image."""
         crop_img = self.img_orig.copy()
