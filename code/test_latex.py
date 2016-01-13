@@ -25,8 +25,9 @@ if __name__ == '__main__':
     # eq = r'a+b=c'
     # eq = r'81 \leq x \geq 192=-1'
     # eq = r'\int \frac{1}{x}dx'
-    # eq = r'yA_{Ay}^{xy}'
+    eq = r'yA_{Ay}^{xy}'
     # eq = r'\sum_{i=0}^{2} x^{2}'
+    # eq = r'(X^{T}X)^{-1}X^{T}y'
     print 'Creating File...'
     create_latex(filename, eq, fontsize=100, figsize=(10,10))
     print 'Reading Image...'

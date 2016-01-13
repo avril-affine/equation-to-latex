@@ -16,17 +16,19 @@ latex code based on positions and sizes.
 - cPickle
 - Flask
 
-# Example
+# Examples
 
-Input:
+Input 1:
 
 ![alt text](img/example.png)
 
-Symbol Recognition:
+Output 1: "\frac{\frac{A}{\beta}+\gamma}{x+y}=z"
+
+Input 2:
 
 ![alt text](img/example2.png)
 
-Output: "\frac{\frac{A}{\beta}+\gamma}{x+y}=z"
+Output 2: "yA_{Ay}^{xy}"
 
 # Files
 
