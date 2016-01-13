@@ -20,16 +20,16 @@ def create_latex(filename, eq, fontsize=50, figsize=(5,5)):
 if __name__ == '__main__':
     filename = 'test.png'
     # eq = r'\frac{x+y}{z+w}'
-    # eq = r'\frac{\frac{A}{\beta}+\gamma}{x+y}=z'
+    eq = r'\frac{\frac{A}{\beta}+\gamma}{x+y}=z'
     # eq = r'x-y'
     # eq = r'a+b=c'
     # eq = r'81 \leq x \geq 192=-1'
     # eq = r'\int \frac{1}{x}dx'
-    eq = r'yA_{Ay}^{xy}'
+    # eq = r'yA_{Ay}^{xy}'
     # eq = r'\sum_{i=0}^{2} x^{2}'
     # eq = r'(X^{T}X)^{-1}X^{T}y'
     print 'Creating File...'
-    create_latex(filename, eq, fontsize=100, figsize=(10,10))
+    create_latex(filename, eq, fontsize=100, figsize=(5,5))
     print 'Reading Image...'
     img = cv2.imread(filename)
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 #    for rect in rects:
 #        predict_symbol(mdl, img, rect, label_dict, show_rect=True)
 
-    latex = Latex2Code(mdl, labels_df, verbose=True)
+    latex = Latex2Code(mdl, labels_df, verbose=False)
     print latex.to_latex(img)
     latex.cropImage()
     # print generate_latex(mdl, img, label_dict)
