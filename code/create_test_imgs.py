@@ -39,7 +39,7 @@ def create_equation(symbols, depth=0, p=np.array([0., 1.]), eq=True):
         operators.extend(equalities)
 
     # adjust probability
-    adjust = 0.5
+    adjust = 1.
     p = p + (np.array([1,-1]) * adjust)
 
     # select operator
@@ -79,7 +79,7 @@ def main():
         eq, depth = create_equation(symbols)
         num = str(i)
         num = ('0' * (4 - len(num))) + num
-        filename = 'test_imgs/test_{}.png'.format(num)
+        filename = 'test_imgs_simple/test_{}.png'.format(num)
         print i, '------', eq
         create_latex(filename, eq, fontsize=100, figsize=(15, 7))
         equations.append(eq)

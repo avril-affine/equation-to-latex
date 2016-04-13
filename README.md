@@ -16,6 +16,15 @@ latex code based on positions and sizes.
 - cPickle
 - Flask
 
+# Files
+
+- code/generate_images.py: Contains functions to generate every symbol.
+Used for training the neural net for symbol recognition.
+- code/model.py: The neural network used for symbol recognition.
+- code/Latex2Code.py: The class to put together the symbols to a latex
+code string.
+- webapp/: Folder containing code to launch a Flask webapp.
+
 # Examples
 
 Input 1:
@@ -30,11 +39,11 @@ Input 2:
 
 Output 2: "yA_{Ay}^{xy}"
 
-# Files
+# Results
 
-- code/generate_images.py: Contains functions to generate every symbol.
-Used for training the neural net for symbol recognition.
-- code/model.py: The neural network used for symbol recognition.
-- code/Latex2Code.py: The class to put together the symbols to a latex
-code string.
-- webapp/: Folder containing code to launch a Flask webapp.
+Achieved 83% accuracy on equations with two operators and 35% on equations 
+with 3-4 operators, where an operator is the standard +, -, * or others 
+such as =, \frac, super/subscript, etc. An output is considered correct only 
+if the output exactly matches the input that made the Latex code. 
+The equations with two operators had an average of 7 symbols, and the 
+equations with 3-4 operators had an average of 15 symbols.

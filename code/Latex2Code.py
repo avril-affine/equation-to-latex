@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 # from sklearn.externals import joblib
 
 
@@ -110,7 +110,7 @@ class Latex2Code(object):
                     rect_base = self._calc_baseline(symbol, index)
 
                     # symbol is in current line
-                    if abs(rect_base - base) <= 20:
+                    if abs(rect_base - base) <= 25:
                         latex += symbol
                     else:
                         found = False
@@ -128,9 +128,13 @@ class Latex2Code(object):
                         # else create a new line
                         if not found:
                             if rect_base > base:
-                                latex += '_{%s}'
+                                latex = '{' + latex + '}' + '_{%s}'
                             else:
-                                latex += '^{%s}'
+                                latex = '{' + latex + '}' + '^{%s}'
+#                            if rect_base > base:
+#                                latex += '_{%s}'
+#                            else:
+#                                latex += '^{%s}'
                             lines.append((len(format_symbols), rect_base))
                             format_symbols.append(symbol)
 
