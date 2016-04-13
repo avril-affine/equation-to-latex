@@ -41,9 +41,14 @@ Output 2: "yA_{Ay}^{xy}"
 
 # Results
 
+The test images were randomly generated with a script that allowed for 
+adjusting the complexity of the equation. A more complex equation would 
+have more super/subscripts, fractions, and symbols.
+
 Achieved 83% accuracy on equations with two operators and 35% on equations 
 with 3-4 operators, where an operator is the standard +, -, * or others 
 such as =, \frac, super/subscript, etc. An output is considered correct only 
 if the output exactly matches the input that made the Latex code. 
 The equations with two operators had an average of 7 symbols, and the 
 equations with 3-4 operators had an average of 15 symbols.
+
